@@ -10,6 +10,7 @@
 #import "DLGMemUI.h"
 #import "DLGMemUIView.h"
 #include "mem.h"
+#import "DLGLockManager.h"
 
 @interface DLGMem () <DLGMemUIViewDelegate> {
     mach_port_t g_task;
@@ -43,6 +44,7 @@
 
 - (void)launchDLGMem {
     [DLGMemUI addDLGMemUIView:self];
+    DLGLockManager.shareInstance.delegate = self;
 }
 
 - (void)searchMem:(const char *)value type:(int)type comparison:(int)comparison {

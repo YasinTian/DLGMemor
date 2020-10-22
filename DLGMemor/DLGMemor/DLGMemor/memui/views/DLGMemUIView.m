@@ -8,6 +8,9 @@
 
 #import "DLGMemUIView.h"
 #import "DLGMemUIViewCell.h"
+#import "DLGLockManager.h"
+#import "DLGMemUILockView.h"
+#import "Masonry.h"
 
 #define MaxResultCount  500
 
@@ -22,7 +25,7 @@
 @property (nonatomic) CGRect rcExpandedFrame;
 
 @property (nonatomic) UIView *vContent;
-@property (nonatomic) UILabel *lblType;
+@property (nonatomic) UIButton *lblType;
 @property (nonatomic) UIView *vSearch;
 @property (nonatomic) UITextField *tfValue;
 @property (nonatomic) UIButton *btnSearch;
@@ -78,8 +81,16 @@
     if (self) {
         [self initVars];
         [self initViews];
+        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(orientationChange) name:UIApplicationDidChangeStatusBarOrientationNotification object:nil];
     }
     return self;
+}
+
+- (void)orientationChange {
+    self.rcExpandedFrame = [UIScreen mainScreen].bounds;
+    if (self.expanded) {
+        self.frame = self.rcExpandedFrame;
+    }
 }
 
 - (void)initVars {
@@ -155,7 +166,7 @@
     NSDictionary *views = @{@"v":v};
     NSArray *ch = [NSLayoutConstraint constraintsWithVisualFormat:@"H:|[v]|" options:0 metrics:nil views:views];
     [self addConstraints:ch];
-    NSArray *cv = [NSLayoutConstraint constraintsWithVisualFormat:@"V:|[v]|" options:0 metrics:nil views:views];
+    NSArray *cv = [NSLayoutConstraint constraintsWithVisualFormat:@"V:|-20-[v]-20-|" options:0 metrics:nil views:views];
     [self addConstraints:cv];
     
     self.vContent = v;
@@ -185,21 +196,36 @@
 }
 
 - (void)initSearchValueType {
-    UILabel *lbl = [[UILabel alloc] init];
-    lbl.translatesAutoresizingMaskIntoConstraints = NO;
-    lbl.backgroundColor = [UIColor clearColor];
-    lbl.textAlignment = NSTextAlignmentCenter;
-    lbl.textColor = [UIColor whiteColor];
-    lbl.text = @"SInt";
-    [self.vSearch addSubview:lbl];
+//    UILabel *lbl = [[UILabel alloc] init];
+//    lbl.translatesAutoresizingMaskIntoConstraints = NO;
+//    lbl.backgroundColor = [UIColor clearColor];
+//    lbl.textAlignment = NSTextAlignmentCenter;
+//    lbl.textColor = [UIColor whiteColor];
+//    lbl.text = @"SInt";
+//    [self.vSearch addSubview:lbl];
+//
+//    NSDictionary *views = @{@"lbl":lbl};
+//    NSArray *ch = [NSLayoutConstraint constraintsWithVisualFormat:@"H:|[lbl(64)]" options:0 metrics:nil views:views];
+//    [self.vSearch addConstraints:ch];
+//    NSArray *cv = [NSLayoutConstraint constraintsWithVisualFormat:@"V:|[lbl]|" options:0 metrics:nil views:views];
+//    [self.vSearch addConstraints:cv];
     
-    NSDictionary *views = @{@"lbl":lbl};
+//    self.lblType = lbl;
+    
+    UIButton *btn = [UIButton buttonWithType:UIButtonTypeCustom];
+    btn.translatesAutoresizingMaskIntoConstraints = NO;
+    [btn setTitle:@"Lock" forState:UIControlStateNormal];
+    [btn setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
+    [btn addTarget:self action:@selector(showLockData) forControlEvents:UIControlEventTouchUpInside];
+    [self.vSearch addSubview:btn];
+    
+    NSDictionary *views = @{@"lbl":btn};
     NSArray *ch = [NSLayoutConstraint constraintsWithVisualFormat:@"H:|[lbl(64)]" options:0 metrics:nil views:views];
     [self.vSearch addConstraints:ch];
     NSArray *cv = [NSLayoutConstraint constraintsWithVisualFormat:@"V:|[lbl]|" options:0 metrics:nil views:views];
     [self.vSearch addConstraints:cv];
     
-    self.lblType = lbl;
+    self.lblType = btn;
 }
 
 - (void)initSearchButton {
@@ -272,7 +298,11 @@
     UISegmentedControl *sc = [[UISegmentedControl alloc] initWithItems:@[@"<", @"<=", @"=", @">=", @">"]];
     sc.translatesAutoresizingMaskIntoConstraints = NO;
     [sc setTitleTextAttributes:@{NSForegroundColorAttributeName:[UIColor whiteColor]} forState:UIControlStateNormal];
-    [sc setTitleTextAttributes:@{NSForegroundColorAttributeName:[UIColor whiteColor]} forState:UIControlStateSelected];
+    if (@available(iOS 13, *)) {
+        [sc setTitleTextAttributes:@{NSForegroundColorAttributeName:[UIColor blackColor]} forState:UIControlStateSelected];
+    } else {
+        [sc setTitleTextAttributes:@{NSForegroundColorAttributeName:[UIColor whiteColor]} forState:UIControlStateSelected];
+    }
     sc.selectedSegmentIndex = 2;
     [sc addTarget:self action:@selector(onComparisonChanged:) forControlEvents:UIControlEventValueChanged];
     [self.vOption addSubview:sc];
@@ -290,7 +320,11 @@
     UISegmentedControl *sc = [[UISegmentedControl alloc] initWithItems:@[@"UByte", @"UShort", @"UInt", @"ULong", @"Float"]];
     sc.translatesAutoresizingMaskIntoConstraints = NO;
     [sc setTitleTextAttributes:@{NSForegroundColorAttributeName:[UIColor whiteColor]} forState:UIControlStateNormal];
-    [sc setTitleTextAttributes:@{NSForegroundColorAttributeName:[UIColor whiteColor]} forState:UIControlStateSelected];
+    if (@available(iOS 13, *)) {
+        [sc setTitleTextAttributes:@{NSForegroundColorAttributeName:[UIColor blackColor]} forState:UIControlStateSelected];
+    } else {
+        [sc setTitleTextAttributes:@{NSForegroundColorAttributeName:[UIColor whiteColor]} forState:UIControlStateSelected];
+    }
     sc.selectedSegmentIndex = -1;
     sc.selected = NO;
     [sc addTarget:self action:@selector(onValueTypeChanged:) forControlEvents:UIControlEventValueChanged];
@@ -309,7 +343,11 @@
     UISegmentedControl *sc = [[UISegmentedControl alloc] initWithItems:@[@"SByte", @"SShort", @"SInt", @"SLong", @"Double"]];
     sc.translatesAutoresizingMaskIntoConstraints = NO;
     [sc setTitleTextAttributes:@{NSForegroundColorAttributeName:[UIColor whiteColor]} forState:UIControlStateNormal];
-    [sc setTitleTextAttributes:@{NSForegroundColorAttributeName:[UIColor whiteColor]} forState:UIControlStateSelected];
+    if (@available(iOS 13, *)) {
+        [sc setTitleTextAttributes:@{NSForegroundColorAttributeName:[UIColor blackColor]} forState:UIControlStateSelected];
+    } else {
+        [sc setTitleTextAttributes:@{NSForegroundColorAttributeName:[UIColor whiteColor]} forState:UIControlStateSelected];
+    }
     sc.selectedSegmentIndex = 2;
     sc.selected = YES;
     [sc addTarget:self action:@selector(onValueTypeChanged:) forControlEvents:UIControlEventValueChanged];
@@ -474,7 +512,7 @@
     NSDictionary *views = @{@"v":v};
     NSArray *ch = [NSLayoutConstraint constraintsWithVisualFormat:@"H:|[v]|" options:0 metrics:nil views:views];
     [self addConstraints:ch];
-    NSArray *cv = [NSLayoutConstraint constraintsWithVisualFormat:@"V:|[v]|" options:0 metrics:nil views:views];
+    NSArray *cv = [NSLayoutConstraint constraintsWithVisualFormat:@"V:|-20-[v]-20-|" options:0 metrics:nil views:views];
     [self addConstraints:cv];
     
     self.vMemoryContent = v;
@@ -669,6 +707,18 @@
 }
 
 #pragma mark - Events
+- (void)showLockData {
+    DLGMemUILockView *lockView = [[DLGMemUILockView alloc] init];
+    lockView.alpha = 0.1;
+    [UIApplication.sharedApplication.keyWindow addSubview:lockView];
+    [lockView mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.edges.equalTo(@0);
+    }];
+    [UIView animateWithDuration:0.2 animations:^{
+        lockView.alpha = 1;
+    }];
+}
+
 - (void)onSearchTapped:(id)sender {
     [self.tfValue resignFirstResponder];
     if ([self.delegate respondsToSelector:@selector(DLGMemUISearchValue:type:comparison:)]) {
@@ -720,7 +770,6 @@
     sc2.selectedSegmentIndex = -1;
     self.isUnsignedValueType = isUnsigned;
     self.selectedValueTypeIndex = sc.selectedSegmentIndex;
-    self.lblType.text = [self stringFromValueType:[self currentValueType]];
 }
 
 - (void)onSearchMemoryTapped:(id)sender {
@@ -884,9 +933,15 @@
 }
 
 #pragma mark - DLGMemUIViewCellDelegate
+- (void)DLGMemUIViewCellLock:(NSString *)address value:(NSString *)value {
+    DLGMemValueType type = [self currentValueType];
+    [DLGLockManager.shareInstance lock:[DLGLockModel modelWithAddress:address value:value type:type]];
+}
+
 - (void)DLGMemUIViewCellModify:(NSString *)address value:(NSString *)value {
     if ([self.delegate respondsToSelector:@selector(DLGMemUIModifyValue:address:type:)]) {
         DLGMemValueType type = [self currentValueType];
+        NSLog(@"手动修改-%@-%@", address, value);
         [self.delegate DLGMemUIModifyValue:value address:address type:type];
     }
 }

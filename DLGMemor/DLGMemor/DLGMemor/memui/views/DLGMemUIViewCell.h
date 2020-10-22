@@ -13,6 +13,7 @@
 
 @protocol DLGMemUIViewCellDelegate <NSObject>
 
+- (void)DLGMemUIViewCellLock:(NSString *)address value:(NSString *)value;
 - (void)DLGMemUIViewCellModify:(NSString *)address value:(NSString *)value;
 - (void)DLGMemUIViewCellViewMemory:(NSString *)address;
 

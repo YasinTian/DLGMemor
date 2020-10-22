@@ -7,6 +7,7 @@
 //
 
 #import "DLGMemUIViewCell.h"
+#import "DLGLockManager.h"
 
 @interface DLGMemUIViewCell ()
 
@@ -120,7 +121,7 @@
 - (void)initViewMemoryButton {
     UIButton *btn = [UIButton buttonWithType:UIButtonTypeSystem];
     btn.translatesAutoresizingMaskIntoConstraints = NO;
-    [btn setTitle:@"V" forState:UIControlStateNormal];
+    [btn setTitle:@"L" forState:UIControlStateNormal];
     [btn setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
     [btn addTarget:self action:@selector(onViewMemoryButtonTapped:) forControlEvents:UIControlEventTouchUpInside];
     [self.contentView addSubview:btn];
@@ -216,9 +217,13 @@
     self.modifying = !self.modifying;
 }
 
+// 这个我先改成锁定了
 - (void)onViewMemoryButtonTapped:(id)sender {
-    if ([self.delegate respondsToSelector:@selector(DLGMemUIViewCellViewMemory:)]) {
-        [self.delegate DLGMemUIViewCellViewMemory:self.address];
+//    if ([self.delegate respondsToSelector:@selector(DLGMemUIViewCellViewMemory:)]) {
+//        [self.delegate DLGMemUIViewCellViewMemory:self.address];
+//    }
+    if ([self.delegate respondsToSelector:@selector(DLGMemUIViewCellLock:value:)]) {
+        [self.delegate DLGMemUIViewCellLock:self.address value:self.value];
     }
 }
 
